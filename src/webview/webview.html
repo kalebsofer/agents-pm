@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; 
+        style-src 'unsafe-inline' https://cdn.jsdelivr.net; 
+        script-src 'unsafe-inline' vscode-resource: https://*.vscode-cdn.net;
+        connect-src http://localhost:* vscode-webview:;
+        img-src vscode-resource: https:;
+        font-src https://cdn.jsdelivr.net;">
+    <link href="https://cdn.jsdelivr.net/npm/@vscode/codicons/dist/codicon.css" rel="stylesheet" />
+    <title>AI Assistant</title>
+    <style>
+        :root {
+            /* VSCode theming variables */
+            --vscode-background: #1e1e1e;
+            --vscode-foreground: #cccccc;
+            --vscode-input-background: #3c3c3c;
+            --vscode-input-foreground: #cccccc;
+            --vscode-button-background: #0e639c;
+            --vscode-button-foreground: #ffffff;
+            --vscode-button-hover-background: #1177bb;
+            
+            /* Custom theme variables */
+            --primary-color: #0e639c;
+            --secondary-color: #1177bb;
+            --border-color: #3c3c3c;
+            --message-user-bg: #2d3141;
+            --message-assistant-bg: #2d382d;
+            --error-color: #f44747;
+            --agent-color: #c586c0;
+            
+            /* Spacing variables */
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            
+            /* Font sizes */
+            --font-xs: 0.75rem;
+            --font-sm: 0.875rem;
+            --font-md: 1rem;
+            --font-lg: 1.25rem;
+            --font-xl: 1.5rem;
+            
+            /* Border radius */
+            --radius-sm: 0.25rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-circle: 50%;
+        }
+        
+        /* Base styles */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            padding: 0;
+            margin: 0;
+            background-color: var(--vscode-background);
+            color: var(--vscode-foreground);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            font-size: var(--font-md);
+            line-height: 1.5;
+        }
+        
+        /* Layout components */
+        header {
+            padding: var(--space-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        main {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: var(--space-md);
+        }
+        
+        footer {
+            padding: var(--space-md);
+            border-top: 1px solid var(--border-color);
+        }
+        
+        /* Typography */
+        h1 {
+            font-size: var(--font-lg);
+            font-weight: 500;
+            margin: 0;
+        }
+        
+        /* Header components */
+        .mode-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .agent-toggle {
+            position: relative;
+            display: inline-block;
+            width: 2.5rem;
+            height: 1.25rem;
+        }
+        
+        .agent-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--vscode-input-background);
+            transition: .4s;
+            border-radius: 1.25rem;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 1rem;
+            width: 1rem;
+            left: 0.125rem;
+            bottom: 0.125rem;
+            background-color: var(--vscode-foreground);
+            transition: .4s;
+            border-radius: var(--radius-circle);
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--agent-color);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(1.25rem);
+        }
+        
+        #mode-label {
+            font-size: var(--font-sm);
+        }
+        
+        /* Message area */
+        .message {
+            display: flex;
+            margin-bottom: var(--space-lg);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .user-message, .assistant-message {
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+        }
+        
+        .user-message {
+            background-color: var(--message-user-bg);
+        }
+        
+        .assistant-message {
+            background-color: var(--message-assistant-bg);
+        }
+        
+        .avatar {
+            width: 2rem;
+            height: 2rem;
+            border-radius: var(--radius-circle);
+            background-color: var(--vscode-button-background);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: var(--space-md);
+            flex-shrink: 0;
+        }
+        
+        .message-content {
+            flex-grow: 1;
+        }
+        
+        /* Message types */
+        .message-alert {
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-lg);
+            border-left: 0.1875rem solid;
+        }
+        
+        .error-message {
+            background-color: rgba(244, 71, 71, 0.2);
+            color: var(--error-color);
+            border-color: var(--error-color);
+        }
+        
+        .agent-progress {
+            background-color: rgba(197, 134, 192, 0.2);
+            color: var(--agent-color);
+            border-color: var(--agent-color);
+            font-style: italic;
+        }
+        
+        /* Code formatting */
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+        }
+        
+        pre {
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+            margin: var(--space-md) 0;
+        }
+        
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        
+        /* Input area */
+        .input-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .textarea-wrapper {
+            display: flex;
+            gap: var(--space-sm);
+        }
+        
+        #user-input {
+            flex-grow: 1;
+            padding: var(--space-sm) var(--space-md);
+            min-height: 2.5rem;
+            max-height: 12.5rem;
+            resize: none;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background-color: var(--vscode-input-background);
+            color: var(--vscode-input-foreground);
+            font-family: inherit;
+            overflow-y: auto;
+            font-size: var(--font-md);
+        }
+        
+        /* Buttons */
+        button {
+            padding: var(--space-sm) var(--space-lg);
+            background-color: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: var(--font-md);
+        }
+        
+        button:hover {
+            background-color: var(--vscode-button-hover-background);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* Context files section */
+        .context-files {
+            margin-top: var(--space-md);
+        }
+        
+        .context-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-xs);
+        }
+        
+        .context-title {
+            font-size: var(--font-sm);
+            font-weight: 500;
+            color: #888;
+        }
+        
+        .context-buttons {
+            display: flex;
+            gap: var(--space-xs);
+        }
+        
+        .context-button {
+            padding: var(--space-xs) var(--space-sm);
+            font-size: var(--font-xs);
+            background-color: var(--vscode-input-background);
+        }
+        
+        #file-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+            max-height: 5rem;
+            overflow-y: auto;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            background-color: var(--vscode-input-background);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-md);
+            font-size: var(--font-xs);
+        }
+        
+        .file-name {
+            max-width: 12.5rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .remove-file-button {
+            background: none;
+            border: none;
+            color: var(--vscode-foreground);
+            padding: 0 var(--space-xs);
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-left: var(--space-xs);
+        }
+        
+        .remove-file-button:hover {
+            color: var(--error-color);
+        }
+        
+        /* Loading indicator */
+        #loading-indicator {
+            display: none;
+            position: fixed;
+            bottom: 5rem;
+            right: 1.25rem;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: var(--radius-circle);
+            width: 2.5rem;
+            height: 2.5rem;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .spinner {
+            border: 0.1875rem solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-circle);
+            border-top: 0.1875rem solid white;
+            width: 1.5rem;
+            height: 1.5rem;
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>AI Assistant</h1>
+        <div class="mode-controls">
+            <span id="mode-label">Chat Mode</span>
+            <label class="agent-toggle" aria-label="Toggle agent mode">
+                <input type="checkbox" id="agent-mode-toggle">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+    </header>
+    
+    <main id="message-container"></main>
+    
+    <footer>
+        <div class="input-container">
+            <div class="textarea-wrapper">
+                <textarea id="user-input" placeholder="Ask a question..." aria-label="Type your message"></textarea>
+                <button id="submit-button" aria-label="Send message">Send</button>
+            </div>
+            
+            <section class="context-files">
+                <div class="context-header">
+                    <div class="context-title">Context Files</div>
+                    <div class="context-buttons">
+                        <button id="attach-files-button" class="context-button" aria-label="Attach files">Attach</button>
+                        <button id="clear-files-button" class="context-button" aria-label="Clear files">Clear</button>
+                    </div>
+                </div>
+                <div id="file-list" role="list"></div>
+            </section>
+        </div>
+    </footer>
+    
+    <div id="loading-indicator" aria-hidden="true" aria-label="Loading">
+        <div class="spinner"></div>
+    </div>
+    
+    <script src="webview.js"></script>
+</body>
+</html> 

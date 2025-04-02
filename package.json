@@ -1,0 +1,53 @@
+{
+  "name": "agent-workshop",
+  "displayName": "AI Agent Workshop",
+  "description": "AI-powered code assistant",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.98.0"
+  },
+  "activationEvents": [
+    "onCommand:agent-workshop.openAIPanel"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "agent-workshop.openAIPanel",
+        "title": "Open AI Panel"
+      }
+    ],
+    "configuration": {
+      "title": "AI Assistant",
+      "properties": {
+        "agent-workshop.aiAPIKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for AI services"
+        },
+        "agent-workshop.aiModel": {
+          "type": "string",
+          "default": "gpt-4o-mini-2024-07-18",
+          "description": "Default AI model to use"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "copy-webview": "node scripts/copy-webview.js",
+    "compile": "tsc -p ./ && npm run copy-webview",
+    "watch": "tsc -watch -p ./ & npm run copy-webview",
+    "clean": "node scripts/clean.js"
+  },
+  "devDependencies": {
+    "@types/node": "20.x",
+    "@types/vscode": "^1.97.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "node-fetch": "^3.3.0"
+  },
+  "private": true
+}

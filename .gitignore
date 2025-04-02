@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.nyc_output/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# Optional: Uncomment if using Next.js
+# .next/
+out/
+
+# Optional: Uncomment if using Vercel
+# .vercel
+
+# Add these new entries
+.vscode-test/
+*.vsix
+
+# Ignore compiled test files
+out/test/
+
+# Ignore test results
+test-results/
+
+# New changes from the code block
+.vscode-test/*
+**/vscode-test/*
+**/vscode-test/**/* 
