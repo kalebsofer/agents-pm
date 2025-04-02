@@ -1,5 +1,5 @@
 /**
- * Shared logging utility for all agent components.
+ * Shared logging utility for agent components.
  */
 
 import * as vscode from 'vscode';

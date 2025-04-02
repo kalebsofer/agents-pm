@@ -4,10 +4,7 @@ import * as fs from 'fs';
 import * as config from '../config/index';
 import { chatManager } from '../chat/ChatManager';
 import { Agent } from '../agent/core/Agent';
-import { ExecutionResult } from '../types/agent';
-import type { Message } from '../types/chat';
-import type { OpenAIMessage, OpenAIRequest, OpenAIResponse } from '../types/panel';
-import { pendingFileChanges } from '../agent/utils/WorkspaceManager';
+import type { OpenAIRequest } from '../types/panel';
 
 export class AIPanel {
     public static currentPanel: AIPanel | undefined;
@@ -453,12 +450,7 @@ export class AIPanel {
     }
     
     private _updatePendingFilesUI(): void {
-        const pendingFiles = Array.from(pendingFileChanges.keys());
-        
-        this._sendMessage({
-            type: 'pendingFilesUpdate',
-            files: pendingFiles
-        });
+        // TODO: Implement this with the actual pending files
     }
     
     // HELPER FUNCTIONS
